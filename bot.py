@@ -68,11 +68,11 @@ def updata2csv(name,day,val):
             # 註解結束
             # print(df)
 
-            print("int(val) + int(temp)",int(val), int(temp))
-
-            df.loc[df['name'] == name, day] = (int(val) + int(temp))
+            print("int(val) + int(temp)",(val), int(temp))
+            temp = val + int(temp)
+            df.loc[df['name'] == name, day] = temp
             df.to_csv('output.csv',index=False,header=True,encoding='utf-8')
-            print("使用者　"+name+"　於"+day+" 收入登記 "+ int(val) + int(temp)+" 進行存檔")
+            print("使用者　"+name+"　於"+day+" 收入登記 "+ str(temp) +" 進行存檔")
             return
     #迴圈跑完都沒有return 代表使用者未在表格上
     # marks.append({'name':"andy",'星期二':2468},ignore_index=True)
@@ -220,7 +220,7 @@ def addTrophy2csv(today,id,num): #把戰利品存到csv檔
 
 
 
-TOKEN = '{ur TOKEN}'
+TOKEN = '{token}'
 
 description = '''Bot in Python'''
 bot = commands.Bot(command_prefix='$', description=description)
@@ -292,8 +292,10 @@ async def total(ctx):
         print(display_name+" 查詢收入失敗，因為當天為有收入")
         await bot.say("還沒有收入喔")
     elif (total_money > 0):
-        print(display_name+" 的收入是:"+str(total_money))
-        await bot.say("hi "+display_name+" 你的收入是:"+str(total_money))
+        # print(display_name+" 的收入是:"+str(total_money))
+        # "{:,}".format(99999999)
+        print(display_name+" 的收入是:"+"{:,}".format(total_money))
+        await bot.say("hi "+display_name+" 你的收入是:"+"{:,}".format(total_money))
 
 
 @bot.command(pass_context=True)
@@ -352,8 +354,10 @@ async def eat(ctx,*args):
             return
 
     addTrophy(args)#把戰利品存入Trophy.csv
-    print(display_name+" today("+ whatdayistoday(1) +") ur inpurt money:"+str(total))
-    await bot.say("hi "+display_name+" today("+ whatdayistoday(1) +") ur inpurt money:"+str(total))
+    # print(display_name+" today("+ whatdayistoday(1) +") ur inpurt money:"+str(total))
+    print(display_name+" today("+ whatdayistoday(1) +") ur inpurt money:"+"{:,}".format(total))
+
+    await bot.say("hi "+display_name+" today("+ whatdayistoday(1) +") ur inpurt money:"+"{:,}".format(total))
     updata2csv(display_name,whatdayistoday(1),total)#把收入存入output.csv
     sum_money(display_name)#計算總收入
 
