@@ -5,6 +5,7 @@ import datetime
 import pandas as pd
 import time,datetime
 from datetime import datetime,timezone,timedelta
+import random
 
 # 1.目前戰利品數量未與本地端csv文件同步(已同步)
 # 2.很多地方有優化空間
@@ -114,6 +115,9 @@ def total_money_search(name): #需要注意的是 目前此函數查詢總收入
     """查詢該使用者的總金額"""
     df = pd.read_csv("output.csv", delimiter=",",encoding='utf-8')
     df.fillna(0,inplace=True) #把nan取代成0
+    if df.empty:
+        print('使用者金額資料表為空')
+        return -1
     print("查詢該使用者的總金額",int(df.loc[df['name'] == name, "total"]))
     return int(df.loc[df['name'] == name, "total"])
     # 因為直接使用把nan取代成0的函數了，所以不需再重新判斷是否等於nan
@@ -152,6 +156,13 @@ def sysnTrophy(day):
     """把csv檔案上面的海怪物品傳到Trophydict裡面"""
     df = pd.read_csv("Trophy.csv", delimiter=",",encoding='utf-8')
     df.fillna(0,inplace=True) #把nan取代成0
+
+    if df.empty:
+        print('data is empty!')
+        for i in Trophydict:#清空字典
+            Trophydict[i]=0 
+        return
+
     for column in df:        
         if(column == 'day'):
             continue
@@ -218,12 +229,38 @@ def addTrophy2csv(today,id,num): #把戰利品存到csv檔
     df.to_csv('Trophy.csv',index=False,header=True,encoding='utf-8')
 
 
+def cleanall():
+    """清空資料數據"""
+    df = pd.read_csv("Trophy.csv", delimiter=",",encoding='utf-8')
+    df.drop(df.index,inplace=True)
+    df.to_csv('Trophy.csv',index=False,header=True,encoding='utf-8')
+
+    if df.empty:
+        print("清空資料數據Trophy.csv")
+    else:
+        print("清空資料數據Trophy.csv失敗")
+    
+
+    df = pd.read_csv("output.csv", delimiter=",",encoding='utf-8')
+    df.drop(df.index,inplace=True)
+    df.to_csv('output.csv',index=False,header=True,encoding='utf-8')
+    if df.empty:
+        print("清空資料數據output.csv")
+    else:
+        print("清空資料數據output.csv失敗")
+    
+
+
+    for i in Trophydict:    #清空字典
+        Trophydict[i]=0 
 
 
 TOKEN = '{token}'
 
 description = '''Bot in Python'''
 bot = commands.Bot(command_prefix='$', description=description)
+
+
 
 print (whatdayistoday(0), whatdayistoday(1)) #2018-08-08 星期三
 print("hi 你好 本呆呆機器人將為您服務")
@@ -247,14 +284,51 @@ async def hello(ctx):
 
 
 @bot.command(pass_context=True)
-async def test(ctx,*args):
-    print(ctx.message.author.display_name)
-    print('{} arguments: {}'.format(len(args), ', '.join(args)))
-    await bot.say('{} arguments: {}'.format(len(args), ', '.join(args)))
-    total = 0 #輸入總金額
-    print(args)
+async def game(ctx):
+    """game"""    
+    await bot.say('請輸入0~9的數字')   
+    def guess_check(m):
+        print(m)
+        return m.content.isdigit()
+    guess = await bot.wait_for_message(timeout=5.0, author=ctx.message.author, check=guess_check)
+    answer = random.randint(1, 10)
+    if guess is None:
+        await bot.say('必須輸入0~9的數字喔，別問為什麼我只是在測試怎麼讓bot限定時間內回應')
+        return
+    if int(guess.content) == answer:
+        await bot.say('你猜對了')
+    else:
+        await bot.say("猜錯了喔 正確答案是 "+str(answer))
 
-    
+
+@bot.command(pass_context=True)
+async def reset(ctx,*args):
+    """reset data"""    
+    print(ctx.message.author.display_name+"使用了刪除資料的功能")
+    await bot.say('確定要刪除當周玩家的收入表和獲得戰利品的資料表? 請在5秒內輸入通關密語:12345678987654321')   
+
+    def num_check(m):
+        return m.content.isdigit()
+    guess = await bot.wait_for_message(timeout=5.0, author=ctx.message.author, check=num_check)
+
+    # answer = random.randint(1, 10)
+    if (guess is None):
+        print(ctx.message.author.display_name+"刪除數據失敗")
+        await bot.say('必須輸入12345678987654321喔')
+        return
+    elif (int(guess.content) == 12345678987654321 ):
+        print(ctx.message.author.display_name+"開始刪除 戰利品資料表")
+        await bot.say('開始刪除 戰利品資料表 後悔也來不及啦')
+        cleanall()
+
+    else:
+        print(ctx.message.author.display_name+"刪除數據時發生未知的錯誤")
+        await bot.say("未知的錯誤")
+        
+
+
+
+
 @bot.command(pass_context=True)
 async def check(ctx):
     """輸出當天總戰利品數量""" 
@@ -289,7 +363,7 @@ async def total(ctx):
     total_money = total_money_search(display_name)
 
     if (total_money <= 0):
-        print(display_name+" 查詢收入失敗，因為當天為有收入")
+        print(display_name+" 查詢收入失敗，因為當天尚未有收入")
         await bot.say("還沒有收入喔")
     elif (total_money > 0):
         # print(display_name+" 的收入是:"+str(total_money))
