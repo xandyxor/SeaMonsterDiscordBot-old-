@@ -48,7 +48,7 @@ def updata2csv(name,day,val):
     for index, row in df.iterrows():#檢查表格上是否已經有使用者
         # print(row)
         if (row['name'] == name):   #如果已經存在表格上
-            # df.loc[df['name'] == '泫泫', "星期一"] = 12345  
+            # df.loc[df['name'] == 'andy', "星期一"] = 12345  
             #查詢當天金額
             # int(df.loc[df['name'] == "Serapin", "星期一"])  
             # print("使用者已經存在表格上")
@@ -75,7 +75,7 @@ def updata2csv(name,day,val):
             print("使用者　"+name+"　於"+day+" 收入登記 "+ int(val) + int(temp)+" 進行存檔")
             return
     #迴圈跑完都沒有return 代表使用者未在表格上
-    # marks.append({'name':"蹦蹦小兔",'星期二':2468},ignore_index=True)
+    # marks.append({'name':"andy",'星期二':2468},ignore_index=True)
     # print(name,day,val)
     df = df.append({'name':name,day:val},ignore_index=True) #新增row
     # print(df)
@@ -83,7 +83,7 @@ def updata2csv(name,day,val):
     df.to_csv('output.csv',index=False,header=True,encoding='utf-8')
 
 
-# updata2csv('蹦蹦小兔','星期二',5487)
+# updata2csv('andy','星期二',5487)
 
 def sum_money(user):
     """計算total金額"""
@@ -219,6 +219,8 @@ def addTrophy2csv(today,id,num): #把戰利品存到csv檔
 
 
 
+
+TOKEN = '{ur TOKEN}'
 
 description = '''Bot in Python'''
 bot = commands.Bot(command_prefix='$', description=description)
